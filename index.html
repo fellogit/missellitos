@@ -321,15 +321,58 @@
       border: none;
       color: #fff;
       border-radius: 50%;
-      width: 22px; height: 22px;
-      font-size: 0.7rem;
+      width: 26px; height: 26px;
+      font-size: 0.75rem;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s;
+      opacity: 1;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: transform 0.15s;
     }
 
-    .stamp-item:hover .stamp-del { opacity: 1; }
+    .stamp-del:active { transform: scale(0.85); }
+
+    /* === RESET BUTTON === */
+    .btn-reset {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: var(--accent2);
+      border: 2px solid var(--accent2);
+      border-radius: 14px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-reset:active { background: rgba(233,69,96,0.15); transform: scale(0.97); }
+
+    /* === CONFIRM MODAL === */
+    .confirm-sheet {
+      background: var(--surface);
+      border-radius: 28px 28px 0 0;
+      padding: 28px 20px max(24px, env(safe-area-inset-bottom));
+      width: 100%;
+      max-width: 480px;
+      transform: translateY(60px);
+      transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+      text-align: center;
+    }
+    .modal-overlay.open .confirm-sheet { transform: translateY(0); }
+    .confirm-icon { font-size: 3rem; margin-bottom: 10px; }
+    .confirm-title { font-family: 'Baloo 2', cursive; font-size: 1.3rem; font-weight: 800; color: var(--accent2); margin-bottom: 8px; }
+    .confirm-msg { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
+    .confirm-row { display: flex; gap: 10px; }
+    .confirm-row button { flex: 1; padding: 13px; border: none; border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.95rem; cursor: pointer; }
+    .btn-cancel-confirm { background: var(--surface2); color: var(--text-muted); }
+    .btn-confirm-del { background: var(--accent2); color: #fff; }
 
     .empty-gallery {
       grid-column: 1/-1;
@@ -630,6 +673,11 @@
       </div>
     </div>
 
+      <!-- RESET -->
+      <button class="btn-reset" onclick="confirmReset()">🗑️ Reiniciar todo el contador</button>
+
+    </div>
+
     <!-- VIEW: RESUMEN (número grande) -->
     <div class="view" id="view-resumen">
       <div class="resumen-card">
@@ -677,6 +725,20 @@
         </div>
       </div>
       <button class="modal-close" onclick="closeAboutBtn()">✅ Entendido</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM RESET MODAL -->
+  <div class="modal-overlay" id="confirm-modal" onclick="closeConfirm(event)">
+    <div class="confirm-sheet">
+      <div class="modal-handle"></div>
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title">¿Reiniciar todo?</div>
+      <div class="confirm-msg">Se eliminarán <strong id="confirm-count">0</strong> sellos guardados.<br>Esta acción no se puede deshacer.</div>
+      <div class="confirm-row">
+        <button class="btn-cancel-confirm" onclick="closeConfirmBtn()">✕ Cancelar</button>
+        <button class="btn-confirm-del" onclick="resetAll()">🗑️ Sí, reiniciar</button>
+      </div>
     </div>
   </div>
 
@@ -874,6 +936,26 @@
       } else {
         copyResumen();
       }
+    }
+
+    // ===================== RESET =====================
+    function confirmReset() {
+      document.getElementById('confirm-count').textContent = stamps.length;
+      document.getElementById('confirm-modal').classList.add('open');
+    }
+    function closeConfirm(e) {
+      if (e.target === document.getElementById('confirm-modal')) closeConfirmBtn();
+    }
+    function closeConfirmBtn() {
+      document.getElementById('confirm-modal').classList.remove('open');
+    }
+    function resetAll() {
+      stamps = [];
+      save();
+      renderGallery();
+      updateCounter();
+      closeConfirmBtn();
+      showToast('🔄 Contador reiniciado');
     }
 
     // ===================== ABOUT =====================
